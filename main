@@ -2,216 +2,117 @@ import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import re
+import string
 
-# =============================================================================
-# Check for a folder called "SRS Configs" and create it if it doesn't exist.
-# =============================================================================
+# -----------------------------------------------------------------------------
+# Build default_options list as a list of tuples: (description, underlying_value)
+# -----------------------------------------------------------------------------
+default_options = [("None", "0")]
+default_options += [("MouseLeft", "1"), ("MouseMiddle", "2"),("MouseRight", "3")]
+default_options += [("Pause Movement", "4"), ("Turbo Fire MouseLeft", "5"),("Turbo Fire/Reload MouseLeft/Right", "6")]
+default_options += [("Border On/Off (Alt B)", "7")]
+default_options += [("0", "8")]
+default_options += [("1", "9")]
+default_options += [("2", "10")]
+default_options += [("3", "11")]
+default_options += [("4", "12")]
+default_options += [("5", "13")]
+default_options += [("6", "14")]
+default_options += [("7", "15")]
+default_options += [("8", "16")]
+default_options += [("9", "17")]
+default_options += [(chr(i), str(i - 87)) for i in range(97, 123)] #lower case letters
+default_options += [(chr(i), str(i - 23)) for i in range(65, 91)] #Upper Case letters
+default_options += [("Return", "704")]
+default_options += [("Space", "71")]
+default_options += [("Escape", "72"),("Tab", "73"), ("Up", "74"), ("Down", "75"), ("Left", "76"), ("Right", "77")]
+default_options += [("+", "78"),(",", "79"), ("-", "80"), (".", "81")]
+default_options += [
+    ("F1", "82"), ("F2", "83"), ("F3", "84"), ("F4", "85"), ("F5", "86"),
+    ("F6", "87"), ("F7", "88"), ("F8", "89"), ("F9", "90"), ("F10", "91"),
+    ("F11", "92"), ("F12", "93")
+]
+
+mod_options = [("None", "0"),("Shift", "1"),("Ctrl", "2"),("Alt", "3"),("WindowsKey", "4")]
+
+# -----------------------------------------------------------------------------
+# Check for the "SRS Configs" folder in the same directory and create it if it doesn't exist.
+# -----------------------------------------------------------------------------
 config_folder = "SRS Configs"
 if not os.path.exists(config_folder):
     os.mkdir(config_folder)
 
-# =============================================================================
-# Default dropdown options
-# =============================================================================
-default_options = (
-    ["None"] +
-    list("ABCDEFGHIJKLMNOPQRSTUVWXYZ") +
-    list("abcdefghijklmnopqrstuvwxyz") +
-    [str(i) for i in range(0, 10)] +
-    ["F" + str(i) for i in range(1, 13)] +
-    ["MouseLeft", "MouseRight", "MouseMiddle"]
-)
-
-# Example: Print the default_options list
-print(default_options)
-
-
-# =============================================================================
-# Configuration options for each key.
-# For each key we provide a friendly label and a list of dropdown choices.
-# =============================================================================
+# -----------------------------------------------------------------------------
+# Set config_options for each key.
+# Every key uses the default_options list for its dropdown.
+# -----------------------------------------------------------------------------
 config_options = {
-    # --- Trigger Group ---
-    "cbButtonTrigger": {
-         "label": "Trigger Button", 
-         "options": ["Standard", "Enhanced", "Exclusive"]
-    },
-    "cbTriggerMod": {
-         "label": "Trigger Modifier", 
-         "options": ["None", "Modifier1", "Modifier2"]
-    },
-    "cbButtonTriggerOffscreen": {
-         "label": "Trigger Button (Offscreen)", 
-         "options": ["Standard", "Enhanced", "Exclusive"]
-    },
-    "cbTriggerModOffscreen": {
-         "label": "Trigger Modifier (Offscreen)", 
-         "options": ["None", "Modifier1", "Modifier2"]
-    },
-    # --- Pump Action Group ---
-    "cbButtonPumpAction": {
-         "label": "Pump Action Button", 
-         "options": ["Standard", "Fast", "Slow"]
-    },
-    "cbPumpActionMod": {
-         "label": "Pump Action Modifier", 
-         "options": ["None", "Modifier1", "Modifier2"]
-    },
-    "cbButtonPumpActionOffscreen": {
-         "label": "Pump Action Button (Offscreen)", 
-         "options": ["Standard", "Fast", "Slow"]
-    },
-    "cbPumpActionModOffscreen": {
-         "label": "Pump Action Modifier (Offscreen)", 
-         "options": ["None", "Modifier1", "Modifier2"]
-    },
-    # --- Front Left Group ---
-    "cbButtonFrontLeft": {
-         "label": "Front Left Button", 
-         "options": default_options
-    },
-    "cbFrontLeftMod": {
-         "label": "Front Left Modifier", 
-         "options": default_options
-    },
-    "cbButtonFrontLeftOffscreen": {
-         "label": "Front Left Button (Offscreen)", 
-         "options": default_options
-    },
-    "cbFrontLeftModOffscreen": {
-         "label": "Front Left Modifier (Offscreen)", 
-         "options": default_options
-    },
-    # --- Rear Left Group ---
-    "cbButtonRearLeft": {
-         "label": "Rear Left Button", 
-         "options": default_options
-    },
-    "cbRearLeftMod": {
-         "label": "Rear Left Modifier", 
-         "options": default_options
-    },
-    "cbButtonRearLeftOffscreen": {
-         "label": "Rear Left Button (Offscreen)", 
-         "options": default_options
-    },
-    "cbRearLeftModOffscreen": {
-         "label": "Rear Left Modifier (Offscreen)", 
-         "options": default_options
-    },
-    # --- Front Right Group ---
-    "cbButtonFrontRight": {
-         "label": "Front Right Button", 
-         "options": default_options
-    },
-    "cbFrontRightMod": {
-         "label": "Front Right Modifier", 
-         "options": default_options
-    },
-    "cbButtonFrontRightOffscreen": {
-         "label": "Front Right Button (Offscreen)", 
-         "options": default_options
-    },
-    "cbFrontRightModOffscreen": {
-         "label": "Front Right Modifier (Offscreen)", 
-         "options": default_options
-    },
-    # --- Rear Right Group ---
-    "cbButtonRearRight": {
-         "label": "Rear Right Button", 
-         "options": default_options
-    },
-    "cbRearRightMod": {
-         "label": "Rear Right Modifier", 
-         "options": default_options
-    },
-    "cbButtonRearRightOffscreen": {
-         "label": "Rear Right Button (Offscreen)", 
-         "options": default_options
-    },
-    "cbRearRightModOffscreen": {
-         "label": "Rear Right Modifier (Offscreen)", 
-         "options": default_options
-    },
-    # --- Up Group ---
-    "cbButtonUp": {
-         "label": "Up Button", 
-         "options": default_options
-    },
-    "cbUpMod": {
-         "label": "Up Modifier", 
-         "options": default_options
-    },
-    "cbButtonUpOffscreen": {
-         "label": "Up Button (Offscreen)", 
-         "options": default_options
-    },
-    "cbUpModOffscreen": {
-         "label": "Up Modifier (Offscreen)", 
-         "options": default_options
-    },
-    # --- Down Group ---
-    "cbButtonDown": {
-         "label": "Down Button", 
-         "options": default_options
-    },
-    "cbDownMod": {
-         "label": "Down Modifier", 
-         "options": default_options
-    },
-    "cbButtonDownOffscreen": {
-         "label": "Down Button (Offscreen)", 
-         "options": default_options
-    },
-    "cbDownModOffscreen": {
-         "label": "Down Modifier (Offscreen)", 
-         "options": default_options
-    },
-    # --- Left Group ---
-    "cbButtonLeft": {
-         "label": "Left Button", 
-         "options": default_options
-    },
-    "cbLeftMod": {
-         "label": "Left Modifier", 
-         "options": default_options
-    },
-    "cbButtonLeftOffscreen": {
-         "label": "Left Button (Offscreen)", 
-         "options": default_options
-    },
-    "cbLeftModOffscreen": {
-         "label": "Left Modifier (Offscreen)", 
-         "options": default_options
-    },
-    # --- Right Group ---
-    "cbButtonRight": {
-         "label": "Right Button", 
-         "options": default_options
-    },
-    "cbRightMod": {
-         "label": "Right Modifier", 
-         "options": default_options
-    },
-    "cbButtonRightOffscreen": {
-         "label": "Right Button (Offscreen)", 
-         "options": default_options
-    },
-    "cbRightModOffscreen": {
-         "label": "Right Modifier (Offscreen)", 
-         "options": default_options
-    }
+    "cbButtonTrigger":          {"label": "Trigger Button",             "options": default_options},
+    "cbTriggerMod":             {"label": "Trigger Modifier",           "options": mod_options},
+    "cbButtonTriggerOffscreen": {"label": "Trigger Button (Offscreen)", "options": default_options},
+    "cbTriggerModOffscreen":    {"label": "Trigger Modifier (Offscreen)", "options": default_options},
+
+    "cbButtonPumpAction":          {"label": "Pump Action Button",         "options": default_options},
+    "cbPumpActionMod":             {"label": "Pump Action Modifier",       "options": default_options},
+    "cbButtonPumpActionOffscreen": {"label": "Pump Action Button (Offscreen)", "options": default_options},
+    "cbPumpActionModOffscreen":    {"label": "Pump Action Modifier (Offscreen)", "options": default_options},
+
+    "cbButtonFrontLeft":         {"label": "Front Left Button",         "options": default_options},
+    "cbFrontLeftMod":            {"label": "Front Left Modifier",       "options": default_options},
+    "cbButtonFrontLeftOffscreen": {"label": "Front Left Button (Offscreen)", "options": default_options},
+    "cbFrontLeftModOffscreen":    {"label": "Front Left Modifier (Offscreen)", "options": default_options},
+
+    "cbButtonRearLeft":          {"label": "Rear Left Button",          "options": default_options},
+    "cbRearLeftMod":             {"label": "Rear Left Modifier",        "options": default_options},
+    "cbButtonRearLeftOffscreen": {"label": "Rear Left Button (Offscreen)", "options": default_options},
+    "cbRearLeftModOffscreen":    {"label": "Rear Left Modifier (Offscreen)", "options": default_options},
+
+    "cbButtonFrontRight":         {"label": "Front Right Button",        "options": default_options},
+    "cbFrontRightMod":            {"label": "Front Right Modifier",      "options": default_options},
+    "cbButtonFrontRightOffscreen": {"label": "Front Right Button (Offscreen)", "options": default_options},
+    "cbFrontRightModOffscreen":    {"label": "Front Right Modifier (Offscreen)", "options": default_options},
+
+    "cbButtonRearRight":         {"label": "Rear Right Button",         "options": default_options},
+    "cbRearRightMod":            {"label": "Rear Right Modifier",       "options": default_options},
+    "cbButtonRearRightOffscreen": {"label": "Rear Right Button (Offscreen)", "options": default_options},
+    "cbRearRightModOffscreen":    {"label": "Rear Right Modifier (Offscreen)", "options": default_options},
+
+    "cbButtonUp":         {"label": "Up Button",         "options": default_options},
+    "cbUpMod":            {"label": "Up Modifier",       "options": default_options},
+    "cbButtonUpOffscreen": {"label": "Up Button (Offscreen)", "options": default_options},
+    "cbUpModOffscreen":    {"label": "Up Modifier (Offscreen)", "options": default_options},
+
+    "cbButtonDown":         {"label": "Down Button",         "options": default_options},
+    "cbDownMod":            {"label": "Down Modifier",       "options": default_options},
+    "cbButtonDownOffscreen": {"label": "Down Button (Offscreen)", "options": default_options},
+    "cbDownModOffscreen":    {"label": "Down Modifier (Offscreen)", "options": default_options},
+
+    "cbButtonLeft":         {"label": "Left Button",         "options": default_options},
+    "cbLeftMod":            {"label": "Left Modifier",       "options": default_options},
+    "cbButtonLeftOffscreen": {"label": "Left Button (Offscreen)", "options": default_options},
+    "cbLeftModOffscreen":    {"label": "Left Modifier (Offscreen)", "options": default_options},
+
+    "cbButtonRight":         {"label": "Right Button",         "options": default_options},
+    "cbRightMod":            {"label": "Right Modifier",       "options": default_options},
+    "cbButtonRightOffscreen": {"label": "Right Button (Offscreen)", "options": default_options},
+    "cbRightModOffscreen":    {"label": "Right Modifier (Offscreen)", "options": default_options},
+    
+    # -----------------------------------------------------------------------------
+    # New primary key: Pedal button (no modifier or offscreen option needed)
+    # -----------------------------------------------------------------------------
+    "cbButtonPedal": {"label": "Pedal Button", "options": default_options}
 }
 
-# =============================================================================
-# Define groups for arranging keys (each group has 4 keys in the order below):
+# -----------------------------------------------------------------------------
+# Define groups for arranging keys.
+# Each group (except for the newly added pedal) is a list of 4 keys in the order:
 # [Primary Button, Primary Modifier, Offscreen Button, Offscreen Modifier]
-# =============================================================================
+# -----------------------------------------------------------------------------
 groups = [
     ["cbButtonTrigger", "cbTriggerMod", "cbButtonTriggerOffscreen", "cbTriggerModOffscreen"],
     ["cbButtonPumpAction", "cbPumpActionMod", "cbButtonPumpActionOffscreen", "cbPumpActionModOffscreen"],
     ["cbButtonFrontLeft", "cbFrontLeftMod", "cbButtonFrontLeftOffscreen", "cbFrontLeftModOffscreen"],
-    ["cbButtonRearLeft", "cbRearLeftMod", "cbButtonRearLeftOffscreen", "cbRearLeftModOffscreen"],
+    ["cbButtonRearLeft", "cbRearLeftMod", "cbButtonRearLeftOffcreen", "cbRearLeftModOffscreen"],
     ["cbButtonFrontRight", "cbFrontRightMod", "cbButtonFrontRightOffscreen", "cbFrontRightModOffscreen"],
     ["cbButtonRearRight", "cbRearRightMod", "cbButtonRearRightOffscreen", "cbRearRightModOffscreen"],
     ["cbButtonUp", "cbUpMod", "cbButtonUpOffscreen", "cbUpModOffscreen"],
@@ -220,19 +121,25 @@ groups = [
     ["cbButtonRight", "cbRightMod", "cbButtonRightOffscreen", "cbRightModOffscreen"]
 ]
 
-# Create a flat list of keys for file operations.
+# -----------------------------------------------------------------------------
+# Add the pedal key as its own group (it will occupy an entire row by itself)
+# -----------------------------------------------------------------------------
+groups.append(["cbButtonPedal"])
+
+# Create a flat list of all keys (for file operations).
 keys_to_replace = sum(groups, [])
 
-# =============================================================================
-# This dictionary will hold the StringVar for each dropdown for later use.
-# =============================================================================
+# -----------------------------------------------------------------------------
+# Global dictionaries to hold:
+# - The StringVar for each key's OptionMenu.
+# - Dropdown mappings for each key: description -> underlying value and vice versa.
+# -----------------------------------------------------------------------------
 dropdowns = {}
+dropdown_mappings = {}
 
-# =============================================================================
-# Function: update_file
-#   Opens a configuration file, searches for lines that start with a key pattern,
-#   and replaces the value in the file with the current value from the dropdown.
-# =============================================================================
+# -----------------------------------------------------------------------------
+# File Operations Functions
+# -----------------------------------------------------------------------------
 def update_file():
     file_path = filedialog.askopenfilename(
         title="Select Configuration File", 
@@ -244,22 +151,20 @@ def update_file():
     with open(file_path, "r") as file:
         lines = file.readlines()
 
+    # Update lines that match a key's pattern.
     for i, line in enumerate(lines):
         for key in keys_to_replace:
             if line.strip().startswith(f'<add key="{key}" value'):
-                current_value = dropdowns[key].get()
-                lines[i] = re.sub(r'value="[^"]*"', f'value="{current_value}"', line)
+                # Retrieve the selected description from the dropdown.
+                desc = dropdowns[key].get()
+                # Look up the underlying value.
+                underlying_value = dropdown_mappings[key]["desc_to_val"].get(desc, desc)
+                lines[i] = re.sub(r'value="[^"]*"', f'value="{underlying_value}"', line)
 
     with open(file_path, "w") as file:
         file.writelines(lines)
-
     messagebox.showinfo("Success", "File updated successfully!")
-
-# =============================================================================
-# Function: export_values
-#   Exports all current dropdown selections to a configuration file in the
-#   "SRS Configs" folder.
-# =============================================================================
+    
 def export_values():
     file_path = filedialog.asksaveasfilename(
         title="Save Configuration",
@@ -272,17 +177,14 @@ def export_values():
 
     try:
         with open(file_path, "w") as file:
-            for key, dropdown_var in dropdowns.items():
-                file.write(f"{key},{dropdown_var.get()}\n")
+            for key in keys_to_replace:
+                desc = dropdowns[key].get()
+                underlying_value = dropdown_mappings[key]["desc_to_val"].get(desc, desc)
+                file.write(f"{key},{underlying_value}\n")
         messagebox.showinfo("Success", "Configuration exported successfully!")
     except Exception as e:
         messagebox.showerror("Error", f"Failed to export configuration:\n{e}")
 
-# =============================================================================
-# Function: import_values
-#   Imports configuration values from a file in the "SRS Configs" folder and
-#   updates the dropdowns accordingly.
-# =============================================================================
 def import_values():
     file_path = filedialog.askopenfilename(
         title="Select Configuration File",
@@ -297,51 +199,55 @@ def import_values():
             for line in file:
                 try:
                     key, value = line.strip().split(",", 1)
-                    if key in dropdowns:
-                        dropdowns[key].set(value)
+                    if key in dropdown_mappings:
+                        desc = dropdown_mappings[key]["val_to_desc"].get(value, value)
+                        dropdowns[key].set(desc)
                 except ValueError:
-                    continue  # skip lines that do not match "key,value" format
+                    continue
         messagebox.showinfo("Success", "Configuration imported successfully!")
     except Exception as e:
         messagebox.showerror("Error", f"Failed to import configuration:\n{e}")
 
-# =============================================================================
-# Create the main Tkinter window.
-# =============================================================================
+# -----------------------------------------------------------------------------
+# Build the UI.
+# -----------------------------------------------------------------------------
 root = tk.Tk()
 root.title("Sinden Remapper Software (SRS)")
 
-# Top frame for operation buttons.
+# Top frame for the operation buttons.
 button_frame = tk.Frame(root)
 button_frame.pack(pady=10)
-
 tk.Button(button_frame, text="Import Config", command=import_values).grid(row=0, column=0, padx=5)
 tk.Button(button_frame, text="Export Config", command=export_values).grid(row=0, column=1, padx=5)
 tk.Button(button_frame, text="Push to Sinden Settings", command=update_file).grid(row=0, column=2, padx=5)
 
-# =============================================================================
-# Frame for the grid layout.
-# Each group is displayed on its own row.
-# Each key in the group gets 2 grid columns (one for the label and one for its dropdown).
-# =============================================================================
+# Frame for the grid-based layout.
 frame = tk.Frame(root)
 frame.pack(pady=10)
 
+# For each group, create one row with each key's label and dropdown.
 for group_index, group in enumerate(groups):
     for col_index, key in enumerate(group):
-        label_col = col_index * 2
-        dropdown_col = col_index * 2 + 1
+        label_col = col_index * 2         # Label in one column.
+        dropdown_col = col_index * 2 + 1    # Dropdown in the next column.
         
-        # Use the friendly label from config_options; if not found, use the key.
         label_text = config_options.get(key, {}).get("label", key)
-        tk.Label(frame, text=label_text, anchor="w").grid(row=group_index, column=label_col, sticky="w", padx=5, pady=2)
+        tk.Label(frame, text=label_text, anchor="w").grid(
+            row=group_index, column=label_col, sticky="w", padx=5, pady=2
+        )
         
-        # Get the dropdown options (fallback to default options)
+        # Retrieve the options (tuples) for this key.
         options = config_options.get(key, {}).get("options", default_options)
+        if not options or not isinstance(options[0], tuple):
+            options = [(opt, opt) for opt in options]
         
-        # Create a StringVar and an OptionMenu for this key.
-        var = tk.StringVar(value=options[0])
-        dropdown = tk.OptionMenu(frame, var, *options)
+        # Build mapping dictionaries: description → value and vice versa.
+        desc_to_val = {desc: val for desc, val in options}
+        val_to_desc = {val: desc for desc, val in options}
+        dropdown_mappings[key] = {"desc_to_val": desc_to_val, "val_to_desc": val_to_desc}
+        
+        var = tk.StringVar(value=options[0][0])
+        dropdown = tk.OptionMenu(frame, var, *[desc for desc, val in options])
         dropdown.grid(row=group_index, column=dropdown_col, padx=5, pady=2)
         dropdowns[key] = var
 
