@@ -1,6 +1,6 @@
 Hi, thought it would be helpful to have a way to swap different profiles for different games for the Sinden Lightgun.  
 
-Install Process
+Install Process:
 You'll need python installed.
 I would put this file in the same folder as your Lightgun.exe file.  This utility only works with the Windows version currently.
 
