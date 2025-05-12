@@ -138,13 +138,15 @@ keys_to_replace = sum(groups, [])
 dropdowns = {}
 dropdown_mappings = {}
 
+global file_path
+file_path = ""
 # -----------------------------------------------------------------------------
 # File Operations Functions
 # -----------------------------------------------------------------------------
 def update_file():
     file_path = filedialog.askopenfilename(
         title="Select Configuration File", 
-        filetypes=[("Config Files", "*.config"), ("All Files", "*.*")]
+        filetypes=[("Config Files", "Lightgun.exe.config"), ("All Files", "*.*")]
     )
     if not file_path:
         return
@@ -209,15 +211,17 @@ def import_values():
     except Exception as e:
         messagebox.showerror("Error", f"Failed to import configuration:\n{e}")
 
-import subprocess
+
 def run_sinden():
-    
+    currentpath = os.path.dirname(os.path.abspath(__file__))
+    Sindenfilepath = os.path.join(currentpath, "lightgun.exe") 
+
     try:
-        result = subprocess.run(["./lightgun.exe"], shell=True, capture_output=True, text=True)
+        result = subprocess.run([Sindenfilepath], check=True, capture_output=True, text=True)
         print("Output:", result.stdout)
-        print("Errors:", result.stderr)
-    except Exception as e:
-        print("Error occurred:", e)
+    except subprocess.CalledProcessError as e:
+        print("Error:", e.stderr)
+
 
 # -----------------------------------------------------------------------------
 # Build the UI.
@@ -228,6 +232,10 @@ root.title("Sinden Remapper Software (SRS)")
 # Top frame for the operation buttons.
 button_frame = tk.Frame(root)
 button_frame.pack(pady=10)
+file_name = file_path
+file_label = tk.Label(root, text=f"Imported file:" + file_name, font=("Arial", 12))
+file_label.pack(pady=10)
+
 tk.Button(button_frame, text="Import Config", command=import_values).grid(row=0, column=0, padx=5)
 tk.Button(button_frame, text="Export Config", command=export_values).grid(row=0, column=1, padx=5)
 tk.Button(button_frame, text="Push to Sinden Settings", command=update_file).grid(row=0, column=2, padx=5)
