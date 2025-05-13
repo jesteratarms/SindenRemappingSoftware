@@ -140,13 +140,16 @@ dropdown_mappings = {}
 
 global file_path
 file_path = ""
+
 # -----------------------------------------------------------------------------
 # File Operations Functions
 # -----------------------------------------------------------------------------
 def update_file():
     file_path = filedialog.askopenfilename(
-        title="Select Configuration File", 
-        filetypes=[("Config Files", "Lightgun.exe.config"), ("All Files", "*.*")]
+        title="Select Configuration File",
+        initialfile = "Lightgun.exe.config",
+        initialdir= os.path.dirname(os.path.abspath(__file__)),
+        filetypes=[("Config Files", "*.config"), ("All Files", "*.*")]
     )
     if not file_path:
         return
@@ -194,6 +197,7 @@ def import_values():
         initialdir=config_folder,
         filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
     )
+    file_label.config(text=f"Imported file: " +os.path.basename(file_path), font=("Arial", 12))
     if not file_path:
         return
 
