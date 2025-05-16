@@ -295,45 +295,238 @@ for group_index, group in enumerate(groups):
         dropdowns[key] = var
 
 notebook.pack(expand=True, fill='both')
+#NEW
 
+folder_path = "SRS Configs/Recoil"
+if not os.path.exists(folder_path):
+    os.mkdir(folder_path)
+
+def on_click(event):
+    """
+    Get the line in the Text widget where the user clicked and print the file name.
+    """
+    # Use "current" index (works with grid; ttk.CURRENT may not work with Text widget)
+    index = text.index("current")
+    line = index.split('.')[0]
+    file_name = text.get(f"{line}.0", f"{line}.end").strip()
+    print(f"Clicked on: {file_name}")
+
+def list_files(dummy_folder_path):
+    """
+    List files from the hard-coded folder "SRS Configs/Recoil" and insert them into the Text widget.
+    (The input parameter is ignored in this example.)
+    """
+    folder_path = "SRS Configs/Recoil"
+    try:
+        files = os.listdir(folder_path)
+    except Exception as e:
+        files = [f"Error: {e}"]
+    text.delete("1.0", tk.END)
+    for file in files:
+        text.insert(tk.END, file + "\n")
+
+def recoilexport_values():
+    """
+    Gather recoil settings from various controls, print them to the console,
+    and display a message confirming the export.
+    """
+    settings = {
+        "chkRecoilTerms": var_chkRecoilTerms.get(),
+        "chkEnableRecoil": var_chkEnableRecoil.get(),
+        "chkRecoilTrigger": var_chkRecoilTrigger.get(),
+        "chkRecoilTriggerOffscreen": var_chkRecoilTriggerOffscreen.get(),
+        "chkRecoilPumpActionOnEvent": var_chkRecoilPumpActionOnEvent.get(),
+        "chkRecoilPumpActionOffEvent": var_chkRecoilPumpActionOffEvent.get(),
+        "chkRecoilFrontLeft": var_chkRecoilFrontLeft.get(),
+        "chkRecoilFrontRight": var_chkRecoilFrontRight.get(),
+        "chkRecoilBackLeft": var_chkRecoilBackLeft.get(),
+        "chkRecoilBackRight": var_chkRecoilBackRight.get(),
+        "chkRecoilAlternative": var_chkRecoilAlternative.get(),
+        "trkRecoilStrength": var_trkRecoilStrength.get(),
+        "radTriggerRecoil": var_radTriggerRecoil.get(),  # 1 for Normal; 0 for Repeat
+        "trkRecoilSlider": var_trkRecoilSlider.get(),
+        "trkStartDelay": var_trkStartDelay.get(),
+        "trkDelayBetweenPulses": var_trkDelayBetweenPulses.get(),
+    }
+ 
+# Open a file dialog for the user to select the export file
+    file_path = filedialog.asksaveasfilename(
+        title="Export Recoil Configuration",
+        defaultextension=".txt",
+        initialdir="SRS Configs/Recoil",
+        filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+    )
+
+    # If the user cancels the dialog, file_path will be an empty string
+    if not file_path:
+        return
+
+    try:
+        with open(file_path, "w") as f:
+            json.dump(settings, f, indent=4)
+        messagebox.showinfo("Export", "Recoil configuration values exported!")
+    except Exception as e:
+        messagebox.showerror("Export Error", f"An error occurred during export:\n{e}")
+
+
+import re
+from tkinter import messagebox
+
+def recoilexportToSinden():
+    """
+    Gather recoil settings from various controls, update the Lightgun.exe.config file
+    by replacing settings in the file (which is treated as a plain text file), and
+    display a message confirming the export.
+    """
+    # Gather settings from the controls.
+    settings = {
+        "chkRecoilTerms": var_chkRecoilTerms.get(),
+        "chkEnableRecoil": var_chkEnableRecoil.get(),
+        "chkRecoilTrigger": var_chkRecoilTrigger.get(),
+        "chkRecoilTriggerOffscreen": var_chkRecoilTriggerOffscreen.get(),
+        "chkRecoilPumpActionOnEvent": var_chkRecoilPumpActionOnEvent.get(),
+        "chkRecoilPumpActionOffEvent": var_chkRecoilPumpActionOffEvent.get(),
+        "chkRecoilFrontLeft": var_chkRecoilFrontLeft.get(),
+        "chkRecoilFrontRight": var_chkRecoilFrontRight.get(),
+        "chkRecoilBackLeft": var_chkRecoilBackLeft.get(),
+        "chkRecoilBackRight": var_chkRecoilBackRight.get(),
+        "chkRecoilAlternative": var_chkRecoilAlternative.get(),
+        "trkRecoilStrength": var_trkRecoilStrength.get(),
+        "radTriggerRecoil": var_radTriggerRecoil.get(),  # 1 for Normal; 0 for Repeat
+        "trkRecoilSlider": var_trkRecoilSlider.get(),
+        "trkStartDelay": var_trkStartDelay.get(),
+        "trkDelayBetweenPulses": var_trkDelayBetweenPulses.get(),
+    }
+    
+    config_file = "Lightgun.exe.config"
+    
+    try:
+        with open(config_file, "r", encoding="utf-8") as f:
+            content = f.read()
+    except Exception as e:
+        messagebox.showerror("Error", f"Unable to load config file: {e}")
+        return
+
+    # For each key-value pair, perform a regex substitution.
+    # This pattern matches lines like:
+    #     <add key="chkRecoilTerms" value="1" />
+    # and replaces the value part.
+    for key, value in settings.items():
+        pattern = fr'(<add\s+key="{re.escape(key)}"\s+value=")(.*?)(".*?>)'
+        # Replace group 2 (the old value) with the new value (converted to string).
+        content, subs = re.subn(pattern, r'\1' + str(value) + r'\3', content)
+        # Optionally, you can check if subs == 0 to warn that the key was not found.
+    
+    try:
+        with open(config_file, "w", encoding="utf-8") as f:
+            f.write(content)
+        messagebox.showinfo("Export", "Recoil configuration values exported and config file updated!")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to write config file: {e}")
+
+
+# ---------------------------
+# TKINTER VARIABLES
+# ---------------------------
+
+# Checkbox variables
+var_chkRecoilTerms = tk.IntVar(value=10)
+var_chkEnableRecoil = tk.IntVar(value=0)
+var_chkRecoilTrigger = tk.IntVar(value=1)
+var_chkRecoilTriggerOffscreen = tk.IntVar(value=1)
+var_chkRecoilPumpActionOnEvent = tk.IntVar(value=0)
+var_chkRecoilPumpActionOffEvent = tk.IntVar(value=0)
+var_chkRecoilFrontLeft = tk.IntVar(value=1)
+var_chkRecoilFrontRight = tk.IntVar(value=0)
+var_chkRecoilBackLeft = tk.IntVar(value=0)
+var_chkRecoilBackRight = tk.IntVar(value=0)
+var_chkRecoilAlternative = tk.IntVar(value=0)
+
+# Slider (trackbar) variables
+var_trkRecoilStrength = tk.IntVar(value=10)
+var_trkRecoilSlider = tk.IntVar(value=75)
+var_trkStartDelay = tk.IntVar(value=0)
+var_trkDelayBetweenPulses = tk.IntVar(value=13)
+
+# Radiobutton variable (1 for Normal; 0 for Repeat)
+var_radTriggerRecoil = tk.IntVar(value=1)
+
+
+# Create a Notebook tab named "Recoil"
 tab2 = ttk.Frame(notebook)
 notebook.add(tab2, text="Recoil")
 
-def on_click(event):
-    # Get the line number where the user clicked
-    index = text.index(ttk.CURRENT)
-    line = index.split('.')[0]
-    
-    # Retrieve the file name from the clicked line
-    file_name = text.get(f"{line}.0", f"{line}.end").strip()
-    print(f"Clicked on: {file_name}")  # Replace with desired action
-    
-    
-def list_files(folder_path):
-    folder_path = "SRS Configs/Recoil"
-    files = os.listdir(folder_path)
-    text.delete("1.0", tk.END)  # Clear previous entries
-    for file in files:
-        text.insert(tk.END, file + "\n")  # Add files to the Text widget
-#ttk.Button(tab2, text="Push to Sinden Settings", command=update_file).grid(row=0, column=2, padx=5)
-# Create a Text widget
+# Configure grid for tab2 for a consistent layout.
+tab2.columnconfigure(0, weight=1)
+
+# ---------------------------
+# LAYOUT ON tab2
+# ---------------------------
+folder_path = "./SRS Configs/Recoil"  # dummy/fallback; list_files uses a hard-coded folder.
+# 2. Place the Text widget immediately after the button.
 text = tk.Text(tab2, wrap="none", height=15, width=50)
-text.pack()
-
-# Add a button to tab2
-button = ttk.Button(tab2, text="Export to Sinden", command=lambda: list_files(folder_path))
-button.pack(pady=5)
-
-
-# Bind click event
+text.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 text.bind("<Button-1>", on_click)
+list_files(folder_path)  # Populate the Text widget with files.
 
-# Specify the folder path (change this to the desired folder)
-folder_path = "./"  # Current directory
-list_files(folder_path)
+# 3. Create a frame for the recoil controls that appears below the Text widget.
+config_frameR = ttk.Frame(tab2)
+config_frameR.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+config_frameR.columnconfigure(0, weight=1)
 
+# 1. Export to Sinden button at the top.
+# (The folder_path argument is not used inside list_files in this example.)
 
-# Pack the Notebook widget
-notebook.pack(expand=True, fill="both")
+export_button = ttk.Button(config_frameR, text="Export to Sinden", command=recoilexportToSinden)
+export_button.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
+# Add an export button for recoil settings in config_frameR.
+btn_export = ttk.Button(config_frameR, text="Export Recoil Config", command=recoilexport_values)
+btn_export.grid(row=0, column=0, padx=10, pady=10, sticky="w", columnspan=3)
+
+# Create separate labeled frames within config_frameR to group controls.
+chk_frame = ttk.LabelFrame(config_frameR, text="Checkbox Options", padding=10)
+chk_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nw")
+
+scale_frame = ttk.LabelFrame(config_frameR, text="Slider Options", padding=10)
+scale_frame.grid(row=1, column=1, padx=10, pady=10, sticky="ne")
+
+radio_frame = ttk.LabelFrame(config_frameR, text="Trigger Recoil Mode", padding=10)
+radio_frame.grid(row=2, column=0, padx=10, pady=10, sticky="w", columnspan=2)
+
+# ---------------------------
+# RECOIL CONTROLS
+# ---------------------------
+# Checkbox Controls
+tk.Checkbutton(chk_frame, text="Recoil Terms", variable=var_chkRecoilTerms).grid(row=0, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Enable Recoil", variable=var_chkEnableRecoil).grid(row=1, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Recoil Trigger", variable=var_chkRecoilTrigger).grid(row=2, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Recoil Trigger Offscreen", variable=var_chkRecoilTriggerOffscreen).grid(row=3, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Pump Action On Event", variable=var_chkRecoilPumpActionOnEvent).grid(row=4, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Pump Action Off Event", variable=var_chkRecoilPumpActionOffEvent).grid(row=5, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Recoil Front Left", variable=var_chkRecoilFrontLeft).grid(row=6, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Recoil Front Right", variable=var_chkRecoilFrontRight).grid(row=7, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Recoil Back Left", variable=var_chkRecoilBackLeft).grid(row=8, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Recoil Back Right", variable=var_chkRecoilBackRight).grid(row=9, column=0, sticky="w")
+tk.Checkbutton(chk_frame, text="Recoil Alternative", variable=var_chkRecoilAlternative).grid(row=10, column=0, sticky="w")
+
+# Slider Controls
+tk.Scale(scale_frame, label="Recoil Strength", from_=0, to=100, orient="horizontal",
+         variable=var_trkRecoilStrength).grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+tk.Scale(scale_frame, label="Recoil Slider", from_=0, to=100, orient="horizontal",
+         variable=var_trkRecoilSlider).grid(row=1, column=0, sticky="ew", padx=5, pady=5)
+tk.Scale(scale_frame, label="Start Delay", from_=0, to=100, orient="horizontal",
+         variable=var_trkStartDelay).grid(row=2, column=0, sticky="ew", padx=5, pady=5)
+tk.Scale(scale_frame, label="Delay Between Pulses", from_=0, to=100, orient="horizontal",
+         variable=var_trkDelayBetweenPulses).grid(row=3, column=0, sticky="ew", padx=5, pady=5)
+
+# Radiobutton Controls
+tk.Radiobutton(radio_frame, text="Trigger Recoil Normal", variable=var_radTriggerRecoil, value=1)\
+    .grid(row=0, column=0, padx=5, pady=5, sticky="w")
+tk.Radiobutton(radio_frame, text="Trigger Recoil Repeat", variable=var_radTriggerRecoil, value=0)\
+    .grid(row=0, column=1, padx=5, pady=5, sticky="w")
+
+# ---------------------------
+# START THE APPLICATION
+# ---------------------------
 root.mainloop()
