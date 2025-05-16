@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 import re
 import string
 import subprocess
@@ -39,7 +39,7 @@ mod_options = [("None", "0"),("Shift", "1"),("Ctrl", "2"),("Alt", "3"),("Windows
 # -----------------------------------------------------------------------------
 # Check for the "SRS Configs" folder in the same directory and create it if it doesn't exist.
 # -----------------------------------------------------------------------------
-config_folder = "SRS Configs"
+config_folder = "SRS Configs/Mappings"
 if not os.path.exists(config_folder):
     os.mkdir(config_folder)
 
@@ -141,6 +141,7 @@ dropdown_mappings = {}
 global file_path
 file_path = ""
 
+
 # -----------------------------------------------------------------------------
 # File Operations Functions
 # -----------------------------------------------------------------------------
@@ -197,10 +198,13 @@ def import_values():
         initialdir=config_folder,
         filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
     )
-    file_label.config(text=f"Imported file: " +os.path.basename(file_path), font=("Arial", 12))
+    
+    
     if not file_path:
         return
 
+    file_label.config(text=f"Imported file: " +os.path.basename(file_path), font=("Arial", 12))
+    
     try:
         with open(file_path, "r") as file:
             for line in file:
@@ -233,24 +237,37 @@ def run_sinden():
 root = tk.Tk()
 root.title("Sinden Remapper Software (SRS)")
 
+# Create a Notebook widget
+notebook = ttk.Notebook(root)
+
+# Create frames for each tab
+tab1 = ttk.Frame(notebook)
+
+
+# Add tabs to the Notebook
+notebook.add(tab1, text="Mapping")
+
+
 # Top frame for the operation buttons.
 button_frame = tk.Frame(root)
 button_frame.pack(pady=10)
 file_name = file_path
-file_label = tk.Label(root, text=f"Imported file:" + file_name, font=("Arial", 12))
-file_label.pack(pady=10)
+#file_label = ttk.Label(tab1, text=f"Imported file:" + file_name, font=("Arial", 12)).grid(row=1, column=3, padx=5)
+file_label = tk.Label(root, text="No file imported yet")
+file_label.pack()
 
-tk.Button(button_frame, text="Import Config", command=import_values).grid(row=0, column=0, padx=5)
-tk.Button(button_frame, text="Export Config", command=export_values).grid(row=0, column=1, padx=5)
-tk.Button(button_frame, text="Push to Sinden Settings", command=update_file).grid(row=0, column=2, padx=5)
+ttk.Button(tab1, text="Import Config", command=import_values).grid(row=0, column=0, padx=5)
+ttk.Button(tab1, text="Export Config", command=export_values).grid(row=0, column=1, padx=5)
+ttk.Button(tab1, text="Push to Sinden Settings", command=update_file).grid(row=0, column=2, padx=5)
 
 tk.Button(button_frame, text="Start Sinden", command=run_sinden).grid(row=0, column=3, padx=5)
 
 
-# Frame for the grid-based layout.
-frame = tk.Frame(root)
-frame.pack(pady=10)
 
+# Frame for the grid-based layout.
+frame = ttk.Frame(root)
+frame.pack(pady=10)
+row_offset = 2
 # For each group, create one row with each key's label and dropdown.
 for group_index, group in enumerate(groups):
     for col_index, key in enumerate(group):
@@ -258,8 +275,8 @@ for group_index, group in enumerate(groups):
         dropdown_col = col_index * 2 + 1    # Dropdown in the next column.
         
         label_text = config_options.get(key, {}).get("label", key)
-        tk.Label(frame, text=label_text, anchor="w").grid(
-            row=group_index, column=label_col, sticky="w", padx=5, pady=2
+        ttk.Label(tab1, text=label_text, anchor="w").grid(
+            row=group_index + row_offset, column=label_col, sticky="w", padx=5, pady=5
         )
         
         # Retrieve the options (tuples) for this key.
@@ -273,8 +290,50 @@ for group_index, group in enumerate(groups):
         dropdown_mappings[key] = {"desc_to_val": desc_to_val, "val_to_desc": val_to_desc}
         
         var = tk.StringVar(value=options[0][0])
-        dropdown = tk.OptionMenu(frame, var, *[desc for desc, val in options])
-        dropdown.grid(row=group_index, column=dropdown_col, padx=5, pady=2)
+        dropdown = ttk.OptionMenu(tab1, var, *[desc for desc, val in options])
+        dropdown.grid(row=group_index + row_offset, column=dropdown_col, padx=5, pady=2)
         dropdowns[key] = var
+
+notebook.pack(expand=True, fill='both')
+
+tab2 = ttk.Frame(notebook)
+notebook.add(tab2, text="Recoil")
+
+def on_click(event):
+    # Get the line number where the user clicked
+    index = text.index(ttk.CURRENT)
+    line = index.split('.')[0]
+    
+    # Retrieve the file name from the clicked line
+    file_name = text.get(f"{line}.0", f"{line}.end").strip()
+    print(f"Clicked on: {file_name}")  # Replace with desired action
+    
+    
+def list_files(folder_path):
+    folder_path = "SRS Configs/Recoil"
+    files = os.listdir(folder_path)
+    text.delete("1.0", tk.END)  # Clear previous entries
+    for file in files:
+        text.insert(tk.END, file + "\n")  # Add files to the Text widget
+#ttk.Button(tab2, text="Push to Sinden Settings", command=update_file).grid(row=0, column=2, padx=5)
+# Create a Text widget
+text = tk.Text(tab2, wrap="none", height=15, width=50)
+text.pack()
+
+# Add a button to tab2
+button = ttk.Button(tab2, text="Export to Sinden", command=lambda: list_files(folder_path))
+button.pack(pady=5)
+
+
+# Bind click event
+text.bind("<Button-1>", on_click)
+
+# Specify the folder path (change this to the desired folder)
+folder_path = "./"  # Current directory
+list_files(folder_path)
+
+
+# Pack the Notebook widget
+notebook.pack(expand=True, fill="both")
 
 root.mainloop()
