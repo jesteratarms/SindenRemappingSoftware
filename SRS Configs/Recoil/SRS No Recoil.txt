@@ -1,0 +1,18 @@
+Recoil Configuration Values
+-----------------------------
+chkRecoilTerms: 10
+chkEnableRecoil: 0
+chkRecoilTrigger: 0
+chkRecoilTriggerOffscreen: 0
+chkRecoilPumpActionOnEvent: 0
+chkRecoilPumpActionOffEvent: 0
+chkRecoilFrontLeft: 0
+chkRecoilFrontRight: 0
+chkRecoilBackLeft: 0
+chkRecoilBackRight: 0
+chkRecoilAlternative: 0
+trkRecoilStrength: 0
+radTriggerRecoil: 1
+trkRecoilSlider: 0
+trkStartDelay: 0
+trkDelayBetweenPulses: 0
