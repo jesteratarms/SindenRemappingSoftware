@@ -541,6 +541,34 @@ var_trkRecoilSlider = tk.IntVar(value=75)
 var_trkStartDelay = tk.IntVar(value=0)
 var_trkDelayBetweenPulses = tk.IntVar(value=13)
 
+
+
+### TAB 3
+
+tab3 = ttk.Frame(notebook)
+notebook.add(tab3, text="Export Mappings")
+
+# Add buttons to the third tab
+btn_dolphin = ttk.Button(tab3, text="Export Dolphin Controller Mapping", command=export_dolphin_mapping)
+btn_game = ttk.Button(tab3, text="Export Game Mapping", command=export_game_mapping)
+btn_dolphin.pack(pady=10)
+btn_game.pack(pady=10)
+
+# Add a label and multiline listbox with options A, B, and C
+label = tk.Label(tab3, text="Select an option:")
+label.pack(pady=5)
+
+# Here, we use a Listbox widget which provides multiple lines of data
+listbox = tk.Listbox(tab3, height=3)  # Display 3 lines (one for each option)
+for option in ["A", "B", "C"]:
+    listbox.insert(tk.END, option)
+listbox.pack(pady=5)
+
+# Bind the selection event to the on_select handler
+listbox.bind("<<ListboxSelect>>", on_select)
+
+
+=======
 # Radiobutton variable (1 for Normal; 0 for Repeat)
 var_radTriggerRecoil = tk.IntVar(value=1)
 
@@ -622,4 +650,5 @@ tk.Radiobutton(radio_frame, text="Trigger Recoil Repeat", variable=var_radTrigge
 # ---------------------------
 # START THE APPLICATION
 # ---------------------------
+
 root.mainloop()
