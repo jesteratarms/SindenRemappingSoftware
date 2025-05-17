@@ -543,32 +543,9 @@ var_trkDelayBetweenPulses = tk.IntVar(value=13)
 
 
 
-### TAB 3
-
-tab3 = ttk.Frame(notebook)
-notebook.add(tab3, text="Export Mappings")
-
-# Add buttons to the third tab
-btn_dolphin = ttk.Button(tab3, text="Export Dolphin Controller Mapping", command=export_dolphin_mapping)
-btn_game = ttk.Button(tab3, text="Export Game Mapping", command=export_game_mapping)
-btn_dolphin.pack(pady=10)
-btn_game.pack(pady=10)
-
-# Add a label and multiline listbox with options A, B, and C
-label = tk.Label(tab3, text="Select an option:")
-label.pack(pady=5)
-
-# Here, we use a Listbox widget which provides multiple lines of data
-listbox = tk.Listbox(tab3, height=3)  # Display 3 lines (one for each option)
-for option in ["A", "B", "C"]:
-    listbox.insert(tk.END, option)
-listbox.pack(pady=5)
-
-# Bind the selection event to the on_select handler
-listbox.bind("<<ListboxSelect>>", on_select)
 
 
-=======
+
 # Radiobutton variable (1 for Normal; 0 for Repeat)
 var_radTriggerRecoil = tk.IntVar(value=1)
 
@@ -646,6 +623,151 @@ tk.Radiobutton(radio_frame, text="Trigger Recoil Normal", variable=var_radTrigge
     .grid(row=0, column=0, padx=5, pady=5, sticky="w")
 tk.Radiobutton(radio_frame, text="Trigger Recoil Repeat", variable=var_radTriggerRecoil, value=0)\
     .grid(row=0, column=1, padx=5, pady=5, sticky="w")
+
+
+### TAB 3
+games = ["Mario Kart Double Dash", "007 Agent Under Fire","007 Agent Under Fire","007 Agent Under Fire","007 Agent Under Fire"]
+gamecodes = ["GM4E01","GW7E69", "GW7P69", "GW7D69", "GW7F69"]
+
+def MappingUpdates():
+    #set controllertpe to XP
+    controllertype1 = variable.get()
+    controllername = variable2.get()
+    # Get the current working directory
+    current_path = os.getcwd()
+
+    # Define the relative file path
+    relative_file_path = fr"\User\GameSettings\ "
+    full_file_path = os.path.join(current_path, relative_file_path)
+		
+    #print("Current Path:", current_path)
+    #print("Full File Path:", full_file_path)
+    #print("Full File Path:", current_path + relative_file_path.strip())
+
+
+    
+    for game, gamecode in zip(games, gamecodes):
+
+        
+        # Define the content to write to the file
+        content = '[Controls]\n'+'#'+game+"-"+gamecode+'\n'
+        content += "PadProfile1 = " + controllertype1 +" - " + game +" -" + gamecode +'\n'
+
+        # Write the content to the file (overwriting the existing content)
+        try:
+            print("Full File Path:", os.path.abspath(current_path+relative_file_path.strip()+gamecode+'.ini'))
+            if not os.path.exists(os.path.abspath(current_path+relative_file_path.strip()+gamecode+'.ini')):
+                with open(os.path.abspath(current_path + relative_file_path.strip()+gamecode + '.ini'), 'w') as file:
+                    file.write(content)
+                    print(f"File has been overwritten successfully.")
+        except FileNotFoundError:
+            print(f"File not found.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+def MappingControllerProfile():
+    #set controllertpe to XP
+    controllertype1 = variable.get()
+    controllername = variable2.get()
+    # Get the current working directory
+    current_path = os.getcwd()
+
+    # Define the relative file path
+    relative_file_path = fr"\User\Config\Profiles\GCPad\ "
+    full_file_path = os.path.join(current_path, relative_file_path)
+		
+    for game, gamecode in zip(games, gamecodes):
+
+        content = ""
+        # Define the content to write to the file
+        if gamecode == "GM4E01":
+            #Mario Kart Double Dash
+           content = "[Profile]\nDevice = "+controllertype1+"/0/"+controllername # VaderPro4
+           content = (content+"\n"+"""
+Buttons/A = `Button A`
+Buttons/B = `Button B`
+Buttons/X = `Button X`
+Buttons/Y = `Button Y`
+Buttons/Z = `Bumper R`
+Buttons/Start = Start
+Main Stick/Up = `Left Y+`
+Main Stick/Down = `Left Y-`
+Main Stick/Left = `Left X-`
+Main Stick/Right = `Left X+`
+Main Stick/Modifier = `Shift`
+Main Stick/Calibration = 100.00 141.42 100.00 141.42 100.00 141.42 100.00 141.42
+C-Stick/Up = `Right Y+`
+C-Stick/Down = `Right Y-`
+C-Stick/Left = `Right X-`
+C-Stick/Right = `Right X+`
+C-Stick/Modifier = `Ctrl`
+C-Stick/Calibration = 100.00 141.42 100.00 141.42 100.00 141.42 100.00 141.42
+Triggers/L = `Trigger L`
+Triggers/R = `Trigger R`
+Triggers/L-Analog = `Trigger L`
+Triggers/R-Analog = `Trigger R`
+D-Pad/Up = `Pad N`
+D-Pad/Down = `Pad S`
+D-Pad/Left = `Pad W`
+D-Pad/Right = `Pad E`
+Rumble/Motor = `Rumble 0`
+""")
+        #elif gamecode == "GW7E69" || gamecode == "GW7P69" || gamecode == "GW7D69" || gamecode == "GW7F69":
+            #Agent Under Fire
+
+
+
+    if content != "":
+        # Write the content to the file (overwriting the existing content)
+        try:
+            print("Full File Path:", os.path.abspath(current_path+relative_file_path.strip()+gamecode+'.ini'))
+            if not os.path.exists(os.path.abspath(current_path+relative_file_path.strip()+gamecode+'.ini')):
+                with open(os.path.abspath(current_path + relative_file_path.strip()+gamecode + '.ini'), 'w') as file:
+                    file.write(content)
+                    print(f"File has been overwritten successfully.")
+        except FileNotFoundError:
+            print(f"File not found.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        
+
+# Tab 3 Dolphin functions
+def dolphingame_click(event):
+    """
+    Get the line in the Text widget where the user clicked and print the file name.
+    """
+    # Use "current" index (works with grid; ttk.CURRENT may not work with Text widget)
+    index = text.index("current")
+    line = index.split('.')[0]
+    file_name = text.get(f"{line}.0", f"{line}.end").strip()
+    print(f"Clicked on: {file_name}")
+
+def export_dolphin_mapping():
+    print("placeholder")
+def export_game_mapping():
+    print("placeholder")
+
+tab3 = ttk.Frame(notebook)
+notebook.add(tab3, text="Export Mappings")
+
+# Add buttons to the third tab
+btn_dolphin = ttk.Button(tab3, text="Export Dolphin Controller Mapping", command=export_dolphin_mapping)
+btn_game = ttk.Button(tab3, text="Export Game Mapping", command=export_game_mapping)
+btn_dolphin.pack(pady=10)
+btn_game.pack(pady=10)
+
+# Add a label and multiline listbox with options A, B, and C
+label = tk.Label(tab3, text="Select an option:")
+label.pack(pady=5)
+
+# Here, we use a Listbox widget which provides multiple lines of data
+listbox = tk.Listbox(tab3, height=3)  # Display 3 lines (one for each option)
+for option in ["A", "B", "C"]:
+    listbox.insert(tk.END, option)
+listbox.pack(pady=5)
+
+# Bind the selection event to the on_select handler
+listbox.bind("<<ListboxSelect>>", dolphingame_click)
 
 # ---------------------------
 # START THE APPLICATION
