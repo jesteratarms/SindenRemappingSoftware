@@ -310,6 +310,7 @@ def on_click(event):
     line = index.split('.')[0]
     file_name = text.get(f"{line}.0", f"{line}.end").strip()
     print(f"Clicked on: {file_name}")
+    recoilimport_values()
 
 def list_files(dummy_folder_path):
     """
@@ -327,8 +328,8 @@ def list_files(dummy_folder_path):
 
 def recoilexport_values():
     """
-    Gather recoil settings from various controls, print them to the console,
-    and display a message confirming the export.
+    Gather recoil settings from various controls,
+    export them in a human-readable text file, and display a message confirming the export.
     """
     settings = {
         "chkRecoilTerms": var_chkRecoilTerms.get(),
@@ -349,7 +350,7 @@ def recoilexport_values():
         "trkDelayBetweenPulses": var_trkDelayBetweenPulses.get(),
     }
  
-# Open a file dialog for the user to select the export file
+    # Open a file dialog for the user to select where to save the exported file
     file_path = filedialog.asksaveasfilename(
         title="Export Recoil Configuration",
         defaultextension=".txt",
@@ -357,20 +358,112 @@ def recoilexport_values():
         filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
     )
 
-    # If the user cancels the dialog, file_path will be an empty string
+    # Exit if the user cancelled the operation
     if not file_path:
         return
 
     try:
         with open(file_path, "w") as f:
-            json.dump(settings, f, indent=4)
+            f.write("Recoil Configuration Values\n")
+            f.write("-----------------------------\n")
+            for key, value in settings.items():
+                f.write(f"{key}: {value}\n")
         messagebox.showinfo("Export", "Recoil configuration values exported!")
     except Exception as e:
         messagebox.showerror("Export Error", f"An error occurred during export:\n{e}")
+    list_files(dummy_folder_path)
+def recoilimport_values():
+    """
+    Open a recoil configuration text file, parse the settings, and update the
+    corresponding control variables.
+    """
+    # Open a file dialog for the user to select the file to import
+    file_path = filedialog.askopenfilename(
+        title="Import Recoil Configuration",
+        filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+    )
+
+    # Exit if the user cancels
+    if not file_path:
+        return
+
+    try:
+        with open(file_path, "r") as f:
+            # Read all lines from the file
+            lines = f.readlines()
+
+        # Assuming the first two lines are header lines, we skip them.
+        # The rest of the file should contain lines "key: value"
+        config = {}
+        for line in lines[2:]:
+            # Remove surrounding whitespace and newlines
+            line = line.strip()
+            if not line:
+                continue
+            if ": " in line:
+                key, value = line.split(": ", 1)
+                config[key.strip()] = value.strip()
+
+        # Try to parse values to the proper types
+        parsed_config = {}
+        for key, value in config.items():
+            # Convert string booleans to actual booleans if applicable
+            if value.lower() == "true":
+                parsed_config[key] = True
+            elif value.lower() == "false":
+                parsed_config[key] = False
+            else:
+                # Attempt to convert to int
+                try:
+                    parsed_config[key] = int(value)
+                except ValueError:
+                    # If int fails, try float conversion
+                    try:
+                        parsed_config[key] = float(value)
+                    except ValueError:
+                        # Otherwise, keep it as string
+                        parsed_config[key] = value
+
+        # Update application variables with the imported settings.
+        # Ensure that these Tkinter variables exist in your scope.
+        if "chkRecoilTerms" in parsed_config:
+            var_chkRecoilTerms.set(parsed_config["chkRecoilTerms"])
+        if "chkEnableRecoil" in parsed_config:
+            var_chkEnableRecoil.set(parsed_config["chkEnableRecoil"])
+        if "chkRecoilTrigger" in parsed_config:
+            var_chkRecoilTrigger.set(parsed_config["chkRecoilTrigger"])
+        if "chkRecoilTriggerOffscreen" in parsed_config:
+            var_chkRecoilTriggerOffscreen.set(parsed_config["chkRecoilTriggerOffscreen"])
+        if "chkRecoilPumpActionOnEvent" in parsed_config:
+            var_chkRecoilPumpActionOnEvent.set(parsed_config["chkRecoilPumpActionOnEvent"])
+        if "chkRecoilPumpActionOffEvent" in parsed_config:
+            var_chkRecoilPumpActionOffEvent.set(parsed_config["chkRecoilPumpActionOffEvent"])
+        if "chkRecoilFrontLeft" in parsed_config:
+            var_chkRecoilFrontLeft.set(parsed_config["chkRecoilFrontLeft"])
+        if "chkRecoilFrontRight" in parsed_config:
+            var_chkRecoilFrontRight.set(parsed_config["chkRecoilFrontRight"])
+        if "chkRecoilBackLeft" in parsed_config:
+            var_chkRecoilBackLeft.set(parsed_config["chkRecoilBackLeft"])
+        if "chkRecoilBackRight" in parsed_config:
+            var_chkRecoilBackRight.set(parsed_config["chkRecoilBackRight"])
+        if "chkRecoilAlternative" in parsed_config:
+            var_chkRecoilAlternative.set(parsed_config["chkRecoilAlternative"])
+        if "trkRecoilStrength" in parsed_config:
+            var_trkRecoilStrength.set(parsed_config["trkRecoilStrength"])
+        if "radTriggerRecoil" in parsed_config:
+            var_radTriggerRecoil.set(parsed_config["radTriggerRecoil"])
+        if "trkRecoilSlider" in parsed_config:
+            var_trkRecoilSlider.set(parsed_config["trkRecoilSlider"])
+        if "trkStartDelay" in parsed_config:
+            var_trkStartDelay.set(parsed_config["trkStartDelay"])
+        if "trkDelayBetweenPulses" in parsed_config:
+            var_trkDelayBetweenPulses.set(parsed_config["trkDelayBetweenPulses"])
+
+        messagebox.showinfo("Import", "Recoil configuration values imported!")
+    except Exception as e:
+        messagebox.showerror("Import Error", f"An error occurred during import:\n{e}")
 
 
-import re
-from tkinter import messagebox
 
 def recoilexportToSinden():
     """
@@ -477,7 +570,7 @@ config_frameR.columnconfigure(0, weight=1)
 # 1. Export to Sinden button at the top.
 # (The folder_path argument is not used inside list_files in this example.)
 
-export_button = ttk.Button(config_frameR, text="Export to Sinden", command=recoilexportToSinden)
+export_button = ttk.Button(config_frameR, text="Push Recoil Config to Sinden", command=recoilexportToSinden)
 export_button.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
 # Add an export button for recoil settings in config_frameR.
