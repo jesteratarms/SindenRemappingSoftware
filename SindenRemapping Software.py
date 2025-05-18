@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox, ttk
 import re
 import string
 import subprocess
-
+import shutil
 # -----------------------------------------------------------------------------
 # Build default_options list as a list of tuples: (description, underlying_value)
 # -----------------------------------------------------------------------------
@@ -51,52 +51,52 @@ config_options = {
     "cbButtonTrigger":          {"label": "Trigger Button",             "options": default_options},
     "cbTriggerMod":             {"label": "Trigger Modifier",           "options": mod_options},
     "cbButtonTriggerOffscreen": {"label": "Trigger Button (Offscreen)", "options": default_options},
-    "cbTriggerModOffscreen":    {"label": "Trigger Modifier (Offscreen)", "options": default_options},
+    "cbTriggerModOffscreen":    {"label": "Trigger Modifier (Offscreen)", "options": mod_options},
 
     "cbButtonPumpAction":          {"label": "Pump Action Button",         "options": default_options},
-    "cbPumpActionMod":             {"label": "Pump Action Modifier",       "options": default_options},
+    "cbPumpActionMod":             {"label": "Pump Action Modifier",       "options": mod_options},
     "cbButtonPumpActionOffscreen": {"label": "Pump Action Button (Offscreen)", "options": default_options},
-    "cbPumpActionModOffscreen":    {"label": "Pump Action Modifier (Offscreen)", "options": default_options},
+    "cbPumpActionModOffscreen":    {"label": "Pump Action Modifier (Offscreen)", "options": mod_options},
 
     "cbButtonFrontLeft":         {"label": "Front Left Button",         "options": default_options},
-    "cbFrontLeftMod":            {"label": "Front Left Modifier",       "options": default_options},
+    "cbFrontLeftMod":            {"label": "Front Left Modifier",       "options": mod_options},
     "cbButtonFrontLeftOffscreen": {"label": "Front Left Button (Offscreen)", "options": default_options},
-    "cbFrontLeftModOffscreen":    {"label": "Front Left Modifier (Offscreen)", "options": default_options},
+    "cbFrontLeftModOffscreen":    {"label": "Front Left Modifier (Offscreen)", "options": mod_options},
 
     "cbButtonRearLeft":          {"label": "Rear Left Button",          "options": default_options},
-    "cbRearLeftMod":             {"label": "Rear Left Modifier",        "options": default_options},
+    "cbRearLeftMod":             {"label": "Rear Left Modifier",        "options": mod_options},
     "cbButtonRearLeftOffscreen": {"label": "Rear Left Button (Offscreen)", "options": default_options},
-    "cbRearLeftModOffscreen":    {"label": "Rear Left Modifier (Offscreen)", "options": default_options},
+    "cbRearLeftModOffscreen":    {"label": "Rear Left Modifier (Offscreen)", "options": mod_options},
 
     "cbButtonFrontRight":         {"label": "Front Right Button",        "options": default_options},
-    "cbFrontRightMod":            {"label": "Front Right Modifier",      "options": default_options},
+    "cbFrontRightMod":            {"label": "Front Right Modifier",      "options": mod_options},
     "cbButtonFrontRightOffscreen": {"label": "Front Right Button (Offscreen)", "options": default_options},
-    "cbFrontRightModOffscreen":    {"label": "Front Right Modifier (Offscreen)", "options": default_options},
+    "cbFrontRightModOffscreen":    {"label": "Front Right Modifier (Offscreen)", "options": mod_options},
 
     "cbButtonRearRight":         {"label": "Rear Right Button",         "options": default_options},
-    "cbRearRightMod":            {"label": "Rear Right Modifier",       "options": default_options},
+    "cbRearRightMod":            {"label": "Rear Right Modifier",       "options": mod_options},
     "cbButtonRearRightOffscreen": {"label": "Rear Right Button (Offscreen)", "options": default_options},
-    "cbRearRightModOffscreen":    {"label": "Rear Right Modifier (Offscreen)", "options": default_options},
+    "cbRearRightModOffscreen":    {"label": "Rear Right Modifier (Offscreen)", "options": mod_options},
 
     "cbButtonUp":         {"label": "Up Button",         "options": default_options},
-    "cbUpMod":            {"label": "Up Modifier",       "options": default_options},
+    "cbUpMod":            {"label": "Up Modifier",       "options": mod_options},
     "cbButtonUpOffscreen": {"label": "Up Button (Offscreen)", "options": default_options},
-    "cbUpModOffscreen":    {"label": "Up Modifier (Offscreen)", "options": default_options},
+    "cbUpModOffscreen":    {"label": "Up Modifier (Offscreen)", "options": mod_options},
 
     "cbButtonDown":         {"label": "Down Button",         "options": default_options},
-    "cbDownMod":            {"label": "Down Modifier",       "options": default_options},
+    "cbDownMod":            {"label": "Down Modifier",       "options": mod_options},
     "cbButtonDownOffscreen": {"label": "Down Button (Offscreen)", "options": default_options},
-    "cbDownModOffscreen":    {"label": "Down Modifier (Offscreen)", "options": default_options},
+    "cbDownModOffscreen":    {"label": "Down Modifier (Offscreen)", "options": mod_options},
 
     "cbButtonLeft":         {"label": "Left Button",         "options": default_options},
-    "cbLeftMod":            {"label": "Left Modifier",       "options": default_options},
+    "cbLeftMod":            {"label": "Left Modifier",       "options": mod_options},
     "cbButtonLeftOffscreen": {"label": "Left Button (Offscreen)", "options": default_options},
-    "cbLeftModOffscreen":    {"label": "Left Modifier (Offscreen)", "options": default_options},
+    "cbLeftModOffscreen":    {"label": "Left Modifier (Offscreen)", "options": mod_options},
 
     "cbButtonRight":         {"label": "Right Button",         "options": default_options},
-    "cbRightMod":            {"label": "Right Modifier",       "options": default_options},
+    "cbRightMod":            {"label": "Right Modifier",       "options": mod_options},
     "cbButtonRightOffscreen": {"label": "Right Button (Offscreen)", "options": default_options},
-    "cbRightModOffscreen":    {"label": "Right Modifier (Offscreen)", "options": default_options},
+    "cbRightModOffscreen":    {"label": "Right Modifier (Offscreen)", "options": mod_options},
     
     # -----------------------------------------------------------------------------
     # New primary key: Pedal button (no modifier or offscreen option needed)
@@ -113,7 +113,7 @@ groups = [
     ["cbButtonTrigger", "cbTriggerMod", "cbButtonTriggerOffscreen", "cbTriggerModOffscreen"],
     ["cbButtonPumpAction", "cbPumpActionMod", "cbButtonPumpActionOffscreen", "cbPumpActionModOffscreen"],
     ["cbButtonFrontLeft", "cbFrontLeftMod", "cbButtonFrontLeftOffscreen", "cbFrontLeftModOffscreen"],
-    ["cbButtonRearLeft", "cbRearLeftMod", "cbButtonRearLeftOffcreen", "cbRearLeftModOffscreen"],
+    ["cbButtonRearLeft", "cbRearLeftMod", "cbButtonRearLeftOffscreen", "cbRearLeftModOffscreen"],
     ["cbButtonFrontRight", "cbFrontRightMod", "cbButtonFrontRightOffscreen", "cbFrontRightModOffscreen"],
     ["cbButtonRearRight", "cbRearRightMod", "cbButtonRearRightOffscreen", "cbRearRightModOffscreen"],
     ["cbButtonUp", "cbUpMod", "cbButtonUpOffscreen", "cbUpModOffscreen"],
@@ -562,7 +562,7 @@ tab2.columnconfigure(0, weight=1)
 # ---------------------------
 folder_path = "./SRS Configs/Recoil"  # dummy/fallback; list_files uses a hard-coded folder.
 # 2. Place the Text widget immediately after the button.
-text = tk.Text(tab2, wrap="none", height=15, width=50)
+text = tk.Text(tab2, wrap="none", height=7, width=45)
 text.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 text.bind("<Button-1>", on_click)
 list_files(folder_path)  # Populate the Text widget with files.
@@ -626,91 +626,185 @@ tk.Radiobutton(radio_frame, text="Trigger Recoil Repeat", variable=var_radTrigge
 
 
 ### TAB 3
-games = ["Mario Kart Double Dash", "007 Agent Under Fire","007 Agent Under Fire","007 Agent Under Fire","007 Agent Under Fire"]
-gamecodes = ["GM4E01","GW7E69", "GW7P69", "GW7D69", "GW7F69"]
 
-def MappingUpdates():
-    #set controllertpe to XP
+global games
+global gamecodes
+global gameselection
+
+games = ["RESIDENT EVIL THE DARKSIDE CHRONICLES", "RESIDENT EVIL THE DARKSIDE CHRONICLES","RESIDENT EVIL THE DARKSIDE CHRONICLES","RESIDENT EVIL THE DARKSIDE CHRONICLES",
+         "RESIDENT EVIL THE UMBRELLA CHRONICLES"]
+
+
+#Trauma Center New Blood
+
+gamecodes = ["SBDE08", "SBDJ08", "SBDK08", "SBDP08",
+             "RBUE08"]
+
+
+
+# Tab 3 Dolphin functions
+
+
+def dolphingame_click(event):
+    """
+    Get the line in the Text widget where the user clicked and print the file name.
+    """
+    # Use "current" index (works with grid; ttk.CURRENT may not work with Text widget)
+    index = text.index("current")
+    line = index.split('.')[0]
+    print(line)
+    global gameselection
+    gameselection =  text.get(f"{line}.0", f"{line}.end").strip()
+    print(f"Clicked on:" + gameselection)
+
+
+
+tab3 = ttk.Frame(notebook)
+notebook.add(tab3, text="Other Export Mappings")
+ # Create a horizontal frame to hold the file path controls in Tab 3
+
+####
+####### DOLPHIN MAPPING
+####Add a label and multiline listbox with options A, B, and C
+label = tk.Label(tab3, text="Dolphin Games: Select a Wii Game:")
+label.pack(pady=5)
+
+# Here, we use a Listbox widget which provides multiple lines of data
+listbox2 = tk.Listbox(tab3, height=3, width = 40)
+
+
+for option in games:
+    current_items = listbox2.get(0, tk.END)
+    if option not in current_items:
+        listbox2.insert(tk.END, option)
+        
+listbox2.pack(pady=5)
+
+# Bind the selection event to the on_select handler
+listbox2.bind("<<ListboxSelect>>", dolphingame_click)
+
+ 
+
+### DOLPHIN FILE PATHS
+redswitch = "N"
+style = ttk.Style()
+style.configure("Red.TLabel", foreground="red")
+
+global dolphin_path
+dolphin_path = shutil.which("dolphin.exe")
+if dolphin_path:
+    print("Found dolphin.exe at:", dolphin_path)
+else:
+    print("dolphin.exe was not found in your system PATH.")
+    dolphin_path = os.getcwd()
+    redswitch = "Y"
+
+dolphinGameSettingExportPath = "Game Settings Path To Be Updated"
+if redswitch != "Y":
+    dolphinGameSettingExportPath = os.path.join(dolphin_path, r"\User\GameSettings\ ")
+
+
+dolphinControllerExportPath ="Controller Settings Path To Be Updated"
+if redswitch != "Y":
+    dolphinControllerExportPath = os.path.join(dolphin_path, fr"\User\Config\Profiles\WiiMote\ ")
+
+#####Mapping functions
+
+def export_game_mapping():
+    print("placeholder")
+        #set controllertpe to XP
     controllertype1 = variable.get()
     controllername = variable2.get()
-    # Get the current working directory
-    current_path = os.getcwd()
 
-    # Define the relative file path
-    relative_file_path = fr"\User\GameSettings\ "
-    full_file_path = os.path.join(current_path, relative_file_path)
-		
-    #print("Current Path:", current_path)
-    #print("Full File Path:", full_file_path)
-    #print("Full File Path:", current_path + relative_file_path.strip())
-
-
-    
+		  
     for game, gamecode in zip(games, gamecodes):
+        if gameselection == game:
 
-        
+
         # Define the content to write to the file
-        content = '[Controls]\n'+'#'+game+"-"+gamecode+'\n'
-        content += "PadProfile1 = " + controllertype1 +" - " + game +" -" + gamecode +'\n'
+            content = '[Controls]\n'+'#'+game+"-"+gamecode+'\n'
+            content += "WiimoteProfile1 = SRS " + game +'\n'
 
         # Write the content to the file (overwriting the existing content)
-        try:
-            print("Full File Path:", os.path.abspath(current_path+relative_file_path.strip()+gamecode+'.ini'))
-            if not os.path.exists(os.path.abspath(current_path+relative_file_path.strip()+gamecode+'.ini')):
-                with open(os.path.abspath(current_path + relative_file_path.strip()+gamecode + '.ini'), 'w') as file:
-                    file.write(content)
-                    print(f"File has been overwritten successfully.")
-        except FileNotFoundError:
-            print(f"File not found.")
-        except Exception as e:
-            print(f"An error occurred: {e}")
+            try:
+                if not os.path.exists(os.path.abspath(dolphinGameSettingExportPath+gamecode+'.ini')):
+                    with open(os.path.abspath(dolphinGameSettingExportPath+gamecode+'.ini'), 'w') as file:
+                        file.write(content)
+                        print(f"File has been overwritten successfully.")
+            except FileNotFoundError:
+                print(f"File not found.")
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
-def MappingControllerProfile():
-    #set controllertpe to XP
+
+def export_dolphin_mapping():
+    print("placeholder")
+
+     #set controllertpe to XP
     controllertype1 = variable.get()
     controllername = variable2.get()
-    # Get the current working directory
-    current_path = os.getcwd()
-
-    # Define the relative file path
-    relative_file_path = fr"\User\Config\Profiles\GCPad\ "
-    full_file_path = os.path.join(current_path, relative_file_path)
 		
     for game, gamecode in zip(games, gamecodes):
-
         content = ""
         # Define the content to write to the file
         if gamecode == "GM4E01":
             #Mario Kart Double Dash
-           content = "[Profile]\nDevice = "+controllertype1+"/0/"+controllername # VaderPro4
-           content = (content+"\n"+"""
-Buttons/A = `Button A`
-Buttons/B = `Button B`
-Buttons/X = `Button X`
-Buttons/Y = `Button Y`
-Buttons/Z = `Bumper R`
-Buttons/Start = Start
-Main Stick/Up = `Left Y+`
-Main Stick/Down = `Left Y-`
-Main Stick/Left = `Left X-`
-Main Stick/Right = `Left X+`
-Main Stick/Modifier = `Shift`
-Main Stick/Calibration = 100.00 141.42 100.00 141.42 100.00 141.42 100.00 141.42
-C-Stick/Up = `Right Y+`
-C-Stick/Down = `Right Y-`
-C-Stick/Left = `Right X-`
-C-Stick/Right = `Right X+`
-C-Stick/Modifier = `Ctrl`
-C-Stick/Calibration = 100.00 141.42 100.00 141.42 100.00 141.42 100.00 141.42
-Triggers/L = `Trigger L`
-Triggers/R = `Trigger R`
-Triggers/L-Analog = `Trigger L`
-Triggers/R-Analog = `Trigger R`
-D-Pad/Up = `Pad N`
-D-Pad/Down = `Pad S`
-D-Pad/Left = `Pad W`
-D-Pad/Right = `Pad E`
-Rumble/Motor = `Rumble 0`
+           content = ("""
+[Profile]
+Device = DInput/0/Keyboard Mouse
+Buttons/A = `Click 2`
+Buttons/1 = `1`
+Buttons/2 = `2`
+Buttons/- = Q
+Buttons/+ = E
+Buttons/Home = RETURN
+D-Pad/Up = UP
+D-Pad/Down = DOWN
+D-Pad/Left = LEFT
+D-Pad/Right = RIGHT
+IR/Up = `Cursor Y-`
+IR/Down = `Cursor Y+`
+IR/Left = `Cursor X-`
+IR/Right = `Cursor X+`
+Shake/X = `Click 2`
+Shake/Y = `Click 2`
+Shake/Z = `Click 2`
+IRPassthrough/Object 1 X = `IR Object 1 X`
+IRPassthrough/Object 1 Y = `IR Object 1 Y`
+IRPassthrough/Object 1 Size = `IR Object 1 Size`
+IRPassthrough/Object 2 X = `IR Object 2 X`
+IRPassthrough/Object 2 Y = `IR Object 2 Y`
+IRPassthrough/Object 2 Size = `IR Object 2 Size`
+IRPassthrough/Object 3 X = `IR Object 3 X`
+IRPassthrough/Object 3 Y = `IR Object 3 Y`
+IRPassthrough/Object 3 Size = `IR Object 3 Size`
+IRPassthrough/Object 4 X = `IR Object 4 X`
+IRPassthrough/Object 4 Y = `IR Object 4 Y`
+IRPassthrough/Object 4 Size = `IR Object 4 Size`
+IMUAccelerometer/Up = `Accel Up`
+IMUAccelerometer/Down = `Accel Down`
+IMUAccelerometer/Left = `Accel Left`
+IMUAccelerometer/Right = `Accel Right`
+IMUAccelerometer/Forward = `Accel Forward`
+IMUAccelerometer/Backward = `Accel Backward`
+IMUGyroscope/Pitch Up = `Gyro Pitch Up`
+IMUGyroscope/Pitch Down = `Gyro Pitch Down`
+IMUGyroscope/Roll Left = `Gyro Roll Left`
+IMUGyroscope/Roll Right = `Gyro Roll Right`
+IMUGyroscope/Yaw Left = `Gyro Yaw Left`
+IMUGyroscope/Yaw Right = `Gyro Yaw Right`
+Extension = Nunchuk
+Nunchuk/Buttons/C = LCONTROL
+Nunchuk/Buttons/Z = LSHIFT
+Nunchuk/Stick/Up = W
+Nunchuk/Stick/Down = S
+Nunchuk/Stick/Left = A
+Nunchuk/Stick/Right = D
+Nunchuk/Stick/Calibration = 100.00 141.42 100.00 141.42 100.00 141.42 100.00 141.42
+Nunchuk/Shake/X = `Click 2`
+Nunchuk/Shake/Y = `Click 2`
+Nunchuk/Shake/Z = `Click 2`
+
 """)
         #elif gamecode == "GW7E69" || gamecode == "GW7P69" || gamecode == "GW7D69" || gamecode == "GW7F69":
             #Agent Under Fire
@@ -720,54 +814,153 @@ Rumble/Motor = `Rumble 0`
     if content != "":
         # Write the content to the file (overwriting the existing content)
         try:
-            print("Full File Path:", os.path.abspath(current_path+relative_file_path.strip()+gamecode+'.ini'))
-            if not os.path.exists(os.path.abspath(current_path+relative_file_path.strip()+gamecode+'.ini')):
-                with open(os.path.abspath(current_path + relative_file_path.strip()+gamecode + '.ini'), 'w') as file:
+            if not os.path.exists(os.path.abspath(dolphinControllerExportPath+gamecode+'.ini')):
+                with open(os.path.abspath(dolphinControllerExportPath+gamecode + '.ini'), 'w') as file:
                     file.write(content)
                     print(f"File has been overwritten successfully.")
         except FileNotFoundError:
             print(f"File not found.")
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"An error occurred: {e}")   
+
+
+
+
+
+### Dolphin location
+ # Create a horizontal frame to hold the file path controls in Tab 3
+
+ 
+hframedolphin = ttk.Frame(tab3)
+hframedolphin.pack(pady=5)
+    
+# Create a label in the horizontal frame
+dolphinloclabel = ttk.Label(hframedolphin, text="Dolphin File Path Location:")
+dolphinloclabel.pack(side="left", padx=5)
+    
+
+   
+# Create an Entry widget to display the file path (initially set as read-only)
+dolphinpath_entry = ttk.Entry(hframedolphin, width=80)
+if redswitch == "Y":  # Assuming redswitch is defined elsewhere as "Y"
+    dolphinpath_entry.config(style="Red.TLabel")
+dolphinpath_entry.pack(side="left", padx=5)
+dolphinpath_entry.insert(0, dolphin_path)
+dolphinpath_entry.config(state="readonly")
+
+def change_dpath():
+    global dolphin_path  # Ensure we update the global variable
+    # Open a dialog to let the user select a new directory
+    new_path = filedialog.askdirectory(title="Select a New Directory")
+    print("Old path:", dolphin_path)
+    print("New path:", new_path)
+    if new_path:  # if a new directory is selected (new_path is not empty)
+        dolphin_path = new_path  # update global variable
+        # Enable editing, update the path, then set back to read-only
+        dolphinpath_entry.config(state='normal')
+        dolphinpath_entry.delete(0, tk.END)
+        dolphinpath_entry.insert(0, new_path)
+        dolphinpath_entry.update_idletasks()  # Force an immediate refresh
+        dolphinpath_entry.config(state='readonly')
         
+        path_entry.config(state='normal')
+        dolphinGameSettingExportPath = os.path.join(dolphin_path, "User", "GameSettings")
+        path_entry.config(state='normal')
+        path_entry.delete(0, tk.END)
+        path_entry.insert(0, dolphinGameSettingExportPath)
+        path_entry.config(state='readonly')
+        
+        controllerpath_entry.config(state='normal')
+        dolphinControllerExportPath = os.path.join(dolphin_path, "User", "Config", "Profiles", "WiiMote")
+        controllerpath_entry.delete(0, tk.END)
+        controllerpath_entry.insert(0, dolphinControllerExportPath)
+        controllerpath_entry.config(state='readonly')
 
-# Tab 3 Dolphin functions
-def dolphingame_click(event):
-    """
-    Get the line in the Text widget where the user clicked and print the file name.
-    """
-    # Use "current" index (works with grid; ttk.CURRENT may not work with Text widget)
-    index = text.index("current")
-    line = index.split('.')[0]
-    file_name = text.get(f"{line}.0", f"{line}.end").strip()
-    print(f"Clicked on: {file_name}")
 
-def export_dolphin_mapping():
-    print("placeholder")
-def export_game_mapping():
-    print("placeholder")
+        
+        
+        
+        print("Game Settings Path:", dolphinGameSettingExportPath)
+        print("Controller Export Path:", dolphinControllerExportPath)
 
-tab3 = ttk.Frame(notebook)
-notebook.add(tab3, text="Export Mappings")
+# Create a button that lets the user change the path
+dolphinchange_button = ttk.Button(hframedolphin, text="Change Path", command=change_dpath)
+dolphinchange_button.pack(side="left", padx=5)
 
-# Add buttons to the third tab
-btn_dolphin = ttk.Button(tab3, text="Export Dolphin Controller Mapping", command=export_dolphin_mapping)
-btn_game = ttk.Button(tab3, text="Export Game Mapping", command=export_game_mapping)
-btn_dolphin.pack(pady=10)
+
+
+###### Game Mapping Path
+
+hframe = ttk.Frame(tab3)
+hframe.pack(pady=20)
+    
+# Create a label in the horizontal frame
+dolphinlabel = ttk.Label(hframe, text="Game File Path:")
+dolphinlabel.pack(side="left", padx=5)
+    
+    # Create an Entry widget to display the file path (initially set as read-only)
+path_entry = ttk.Entry(hframe, width=80)
+path_entry.pack(side="left", padx=5)
+path_entry.insert(0, dolphinGameSettingExportPath)
+path_entry.config(state="readonly")
+
+def change_gspath():
+    # Open a dialog to let the user select a new directory
+    dolphinGameSettingExportPath = filedialog.askdirectory(title="Select a New Directory")
+    if dolphinGameSettingExportPath:
+        # Enable editing, update the path, then set back to read-only
+        path_entry.config(state='normal')
+        path_entry.delete(0, tk.END)
+        path_entry.insert(0, dolphinGameSettingExportPath)
+        path_entry.config(state='readonly')
+
+
+    # Create a button that lets the user change the path
+change_button = ttk.Button(hframe, text="Change Path", command=change_gspath)
+change_button.pack(side="left", padx=5)
+
+btn_game = ttk.Button(hframe, text="Export Game Mapping", command=export_game_mapping)
 btn_game.pack(pady=10)
 
-# Add a label and multiline listbox with options A, B, and C
-label = tk.Label(tab3, text="Select an option:")
-label.pack(pady=5)
 
-# Here, we use a Listbox widget which provides multiple lines of data
-listbox = tk.Listbox(tab3, height=3)  # Display 3 lines (one for each option)
-for option in ["A", "B", "C"]:
-    listbox.insert(tk.END, option)
-listbox.pack(pady=5)
 
-# Bind the selection event to the on_select handler
-listbox.bind("<<ListboxSelect>>", dolphingame_click)
+###### Controller Mapping Path
+hframefirst = ttk.Frame(tab3)
+hframefirst.pack(pady=10)
+
+# Create a label in the horizontal frame
+controllerLabelPath = ttk.Label(hframefirst, text="Controller Mapping Path:")
+controllerLabelPath.pack(side="left", padx=5)
+
+    # Create an Entry widget to display the file path (initially set as read-only)
+controllerpath_entry = ttk.Entry(hframefirst, width=80)
+controllerpath_entry.pack(side="left", padx=5)
+controllerpath_entry.insert(0, dolphinControllerExportPath)
+controllerpath_entry.config(state="readonly")
+
+def change_controllerpath():
+    # Open a dialog to let the user select a new directory
+    dolphinGameSettingExportPath = filedialog.askdirectory(title="Select a New Directory")
+    if dolphinControllerExportPath:
+        # Enable editing, update the path, then set back to read-only
+        controllerpath_entry.config(state='normal')
+        controllerpath_entry.delete(0, tk.END)
+        controllerpath_entry.insert(0, dolphinControllerExportPath)
+        controllerpath_entry.config(state='readonly')
+    print("Game Settings Path:", dolphinGameSettingExportPath)
+
+# Add buttons to the third tab
+    # Create a button that lets the user change the path
+controllerchange_button = ttk.Button(hframefirst, text="Change Path", command=change_controllerpath)
+controllerchange_button.pack(side="left", padx=5)
+
+
+
+btn_dolphin = ttk.Button(hframefirst, text="Export Dolphin Controller Mapping", command=export_dolphin_mapping)
+btn_dolphin.pack(pady=10)
+
+
+    
 
 # ---------------------------
 # START THE APPLICATION
