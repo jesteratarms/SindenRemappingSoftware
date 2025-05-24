@@ -5,6 +5,7 @@ import re
 import string
 import subprocess
 import shutil
+import platform
 # -----------------------------------------------------------------------------
 # Build default_options list as a list of tuples: (description, underlying_value)
 # -----------------------------------------------------------------------------
@@ -641,19 +642,16 @@ global gamecodes
 global gameselection
 
 games = ["RESIDENT EVIL THE DARKSIDE CHRONICLES", "RESIDENT EVIL THE DARKSIDE CHRONICLES","RESIDENT EVIL THE DARKSIDE CHRONICLES","RESIDENT EVIL THE DARKSIDE CHRONICLES",
-         "RESIDENT EVIL THE UMBRELLA CHRONICLES"]
+         "RESIDENT EVIL THE UMBRELLA CHRONICLES",
+         "TRAUMA CENTER NEW BLOOD","TRAUMA CENTER NEW BLOOD","TRAUMA CENTER NEW BLOOD"]
 
 
-#Trauma Center New Blood
 
 gamecodes = ["SBDE08", "SBDJ08", "SBDK08", "SBDP08",
-             "RBUE08"]
-
-
+             "RBUE08",
+             "RK2EEB", "RK2JEB", "RK2P01"]
 
 # Tab 3 Dolphin functions
-
-
 def dolphingame_click(event):
     """
     Get the selected item from the Listbox and print it.
@@ -669,7 +667,7 @@ def dolphingame_click(event):
 
 
 tab3 = ttk.Frame(notebook)
-notebook.add(tab3, text="Other Export Mappings")
+notebook.add(tab3, text="Dolphin Export Mappings")
  # Create a horizontal frame to hold the file path controls in Tab 3
 
 ####
@@ -699,11 +697,27 @@ redswitch = "N"
 style = ttk.Style()
 style.configure("Red.TLabel", foreground="red")
 
+
+
 global dolphin_path
+def find_prog(prog):
+    return shutil.which(prog)
+
+# Example usage:
+path = find_prog("dolphin.exe")
+if path:
+    print(f"Found at: {path}")
+else:
+    print("Program not found.")
+
+
+
+
 dolphin_path = shutil.which("dolphin.exe")
 if dolphin_path:
     print("Found dolphin.exe at:", dolphin_path)
 else:
+    
     print("dolphin.exe was not found in your system PATH.")
     dolphin_path = os.getcwd()
     redswitch = "Y"
@@ -720,11 +734,6 @@ if redswitch != "Y":
 #####Mapping functions
 
 def export_game_mapping():
-    print("placeholder")
-        #set controllertpe to XP
-    controllertype1 = variable.get()
-    controllername = variable2.get()
-
 		  
     for game, gamecode in zip(games, gamecodes):
         if gameselection == game:
@@ -747,16 +756,11 @@ def export_game_mapping():
 
 
 def export_dolphin_mapping():
-    print("placeholder")
-
-     #set controllertpe to XP
-    controllertype1 = variable.get()
-    controllername = variable2.get()
 		
     for game, gamecode in zip(games, gamecodes):
         content = ""
         # Define the content to write to the file
-        if gamecode == "GM4E01":
+        if game == "":
             #Mario Kart Double Dash
            content = ("""
 [Profile]
@@ -815,9 +819,64 @@ Nunchuk/Shake/Y = `Click 2`
 Nunchuk/Shake/Z = `Click 2`
 
 """)
-        #elif gamecode == "GW7E69" || gamecode == "GW7P69" || gamecode == "GW7D69" || gamecode == "GW7F69":
-            #Agent Under Fire
-
+        elif game == "TRAUMA CENTER NEW BLOOD":
+           content = ("""
+[Profile]
+Device = DInput/0/Keyboard Mouse
+Buttons/A = A
+Buttons/B = B
+Buttons/1 = `1`
+Buttons/2 = `2`
+Buttons/- = MINUS
+Buttons/+ = @(Shift+EQUALS)
+Buttons/Home = RETURN
+D-Pad/Up = UP
+D-Pad/Down = DOWN
+D-Pad/Left = LEFT
+D-Pad/Right = RIGHT
+IR/Up = `Cursor Y-`
+IR/Down = `Cursor Y+`
+IR/Left = `Cursor X-`
+IR/Right = `Cursor X+`
+Shake/X = `Click 2`
+Shake/Y = `Click 2`
+Shake/Z = `Click 2`
+IRPassthrough/Object 1 X = `IR Object 1 X`
+IRPassthrough/Object 1 Y = `IR Object 1 Y`
+IRPassthrough/Object 1 Size = `IR Object 1 Size`
+IRPassthrough/Object 2 X = `IR Object 2 X`
+IRPassthrough/Object 2 Y = `IR Object 2 Y`
+IRPassthrough/Object 2 Size = `IR Object 2 Size`
+IRPassthrough/Object 3 X = `IR Object 3 X`
+IRPassthrough/Object 3 Y = `IR Object 3 Y`
+IRPassthrough/Object 3 Size = `IR Object 3 Size`
+IRPassthrough/Object 4 X = `IR Object 4 X`
+IRPassthrough/Object 4 Y = `IR Object 4 Y`
+IRPassthrough/Object 4 Size = `IR Object 4 Size`
+IMUAccelerometer/Up = `Accel Up`
+IMUAccelerometer/Down = `Accel Down`
+IMUAccelerometer/Left = `Accel Left`
+IMUAccelerometer/Right = `Accel Right`
+IMUAccelerometer/Forward = `Accel Forward`
+IMUAccelerometer/Backward = `Accel Backward`
+IMUGyroscope/Pitch Up = `Gyro Pitch Up`
+IMUGyroscope/Pitch Down = `Gyro Pitch Down`
+IMUGyroscope/Roll Left = `Gyro Roll Left`
+IMUGyroscope/Roll Right = `Gyro Roll Right`
+IMUGyroscope/Yaw Left = `Gyro Yaw Left`
+IMUGyroscope/Yaw Right = `Gyro Yaw Right`
+Extension = Nunchuk
+Nunchuk/Buttons/C = C
+Nunchuk/Buttons/Z = Z
+Nunchuk/Stick/Up = W
+Nunchuk/Stick/Down = S
+Nunchuk/Stick/Left = Z
+Nunchuk/Stick/Right = D
+Nunchuk/Stick/Calibration = 100.00 141.42 100.00 141.42 100.00 141.42 100.00 141.42
+Nunchuk/Shake/X = `Click 2`
+Nunchuk/Shake/Y = `Click 2`
+Nunchuk/Shake/Z = `Click 2`
+""")
 
 
     if content != "":
@@ -832,10 +891,6 @@ Nunchuk/Shake/Z = `Click 2`
         except Exception as e:
             print(f"An error occurred: {e}")   
 
-
-
-
-
 ### Dolphin location
  # Create a horizontal frame to hold the file path controls in Tab 3
 
@@ -846,9 +901,7 @@ hframedolphin.pack(pady=5)
 # Create a label in the horizontal frame
 dolphinloclabel = ttk.Label(hframedolphin, text="Dolphin File Path Location:")
 dolphinloclabel.pack(side="left", padx=5)
-    
-
-   
+       
 # Create an Entry widget to display the file path (initially set as read-only)
 dolphinpath_entry = ttk.Entry(hframedolphin, width=80)
 if redswitch == "Y":  # Assuming redswitch is defined elsewhere as "Y"
@@ -885,10 +938,6 @@ def change_dpath():
         controllerpath_entry.insert(0, dolphinControllerExportPath)
         controllerpath_entry.config(state='readonly')
 
-
-        
-        
-        
         print("Game Settings Path:", dolphinGameSettingExportPath)
         print("Controller Export Path:", dolphinControllerExportPath)
 
@@ -929,13 +978,13 @@ change_button = ttk.Button(hframe, text="Change Path", command=change_gspath)
 change_button.pack(side="left", padx=5)
 
 btn_game = ttk.Button(hframe, text="Export Game Mapping", command=export_game_mapping)
-btn_game.pack(pady=10)
+btn_game.pack(pady=5)
 
 
 
 ###### Controller Mapping Path
 hframefirst = ttk.Frame(tab3)
-hframefirst.pack(pady=10)
+hframefirst.pack(pady=5)
 
 # Create a label in the horizontal frame
 controllerLabelPath = ttk.Label(hframefirst, text="Controller Mapping Path:")
@@ -968,7 +1017,24 @@ controllerchange_button.pack(side="left", padx=5)
 btn_dolphin = ttk.Button(hframefirst, text="Export Dolphin Controller Mapping", command=export_dolphin_mapping)
 btn_dolphin.pack(pady=10)
 
+hframelast = ttk.Frame(tab3)
+hframelast.pack(pady=25)
 
+def start_dolphin():
+    # Specify the full path if dolphin.exe is not in your system's PATH,
+    # for example: r"C:\Program Files\Dolphin\Dolphin.exe".
+    print(dolphin_path)
+    dolphinpathstart = os.path.join(dolphin_path, "dolphin.exe")
+    print(dolphinpathstart)
+    try:
+        # Using subprocess.Popen so that your application remains responsive.
+        subprocess.Popen([dolphinpathstart])
+    except Exception as e:
+        print(f"Error starting {dolphinpathstart}: {e}")
+
+
+btn_startdolphin = ttk.Button(hframelast, text="Start Dolphin", command=start_dolphin)
+btn_startdolphin.pack(pady=25)
     
 
 # ---------------------------
