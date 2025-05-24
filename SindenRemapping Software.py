@@ -101,7 +101,8 @@ config_options = {
     # -----------------------------------------------------------------------------
     # New primary key: Pedal button (no modifier or offscreen option needed)
     # -----------------------------------------------------------------------------
-    "cbButtonPedal": {"label": "Pedal Button", "options": default_options}
+    "cbButtonPedal": {"label": "Pedal Button", "options": default_options},
+    "chkEnableJoystick": {"label": "Joystick Enabled", "options": default_options},
 }
 
 # -----------------------------------------------------------------------------
@@ -221,14 +222,22 @@ def import_values():
 
 
 def run_sinden():
-    currentpath = os.path.dirname(os.path.abspath(__file__))
-    Sindenfilepath = os.path.join(currentpath, "lightgun.exe") 
-
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    sinden_filepath = os.path.join(current_path, "lightgun.exe")
     try:
-        result = subprocess.run([Sindenfilepath], check=True, capture_output=True, text=True)
-        print("Output:", result.stdout)
+        result = subprocess.run(
+            [sinden_filepath],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True
+        )
+        print("Success:", result.stdout)
     except subprocess.CalledProcessError as e:
         print("Error:", e.stderr)
+    except Exception as e:
+        print("An exception occurred:", str(e))
+
 
 
 # -----------------------------------------------------------------------------
@@ -647,15 +656,15 @@ gamecodes = ["SBDE08", "SBDJ08", "SBDK08", "SBDP08",
 
 def dolphingame_click(event):
     """
-    Get the line in the Text widget where the user clicked and print the file name.
+    Get the selected item from the Listbox and print it.
     """
-    # Use "current" index (works with grid; ttk.CURRENT may not work with Text widget)
-    index = text.index("current")
-    line = index.split('.')[0]
-    print(line)
     global gameselection
-    gameselection =  text.get(f"{line}.0", f"{line}.end").strip()
-    print(f"Clicked on:" + gameselection)
+    # Get the current selection via curselection(), which returns a tuple of indices.
+    selection = listbox2.curselection()
+    if selection:
+        index = selection[0]  # Get the first selected index.
+        gameselection = listbox2.get(index).strip()  # Retrieve the item text.
+        print("Clicked on: " + gameselection)
 
 
 
